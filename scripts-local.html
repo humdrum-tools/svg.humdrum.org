@@ -1,0 +1,65 @@
+
+
+
+<script>
+
+
+//////////////////////////////
+//
+// displayMidiPianoRollFromUrl -- upload a MIDI file to the server and 
+//    get an SVG piano roll image in return.
+//
+
+function displayMidiPianoRollFromUrl(midiurl, targetid, options) {
+	getMidiDataFromUrlAndThenConvertToSvg(midiurl);
+}
+
+
+//////////////////////////////
+//
+// getMidiDataFromUrlAndThenConvertToSvg --
+// 
+// Reference: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Sending_and_Receiving_Binary_Data
+//
+
+function getMidiDataFromUrlAndThenConvertToSvg(url, targetid, options) {
+	if (!url) {
+		return null;
+	}
+	let request = new XMLHttpRequest();
+	request.open("GET", url);
+	request.responseType = "blob";
+	request.onload = function (event) {
+		var blob = this.response;
+console.log("BLOB IS", blob);
+		displayMidiPianoRollFromBlob(blob, targetid, options);
+	};
+	request.send();
+}
+
+
+//////////////////////////////
+//
+// displayMidiPianoRollFromBlob -- Send the blob in a form to svg.humdrum.org
+//   and then display the restults in targetid element.
+//
+
+function displayMidiPianoRollFromBlob(blob, targetid, options) {
+	let formdata = new FormData();
+	formdata.set("outputformat", "pianoroll");
+	formdata.append("inputdata", blob);
+
+	let request = new XMLHttpRequest();
+	request.open("POST", "https://data.svg.humdrum.org");
+	request.onload = function () {
+		console.log("FINISHED DOWNLOADING", this.textRepsonse);
+	};
+	request.send(formdata);
+}
+
+
+
+</script>
+
+
+
