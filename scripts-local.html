@@ -2,7 +2,7 @@
 
 
 <script>
-// vim: ts=3:ft=javascript
+// vim: ts=3:ft=javascript:nowrap
 
 
 //////////////////////////////
@@ -25,21 +25,25 @@ function updateSvg() {
 	for (let i=0; i<elements.length; i++) {
 		let id = elements[i].id;
 		let value = elements[i].checked;
-console.log("PROCESSING ", id, value);
 		if (value) {
 			options[id] = 1;
 		}
 	}
 
+	let uelement = document.querySelector("#url");
+	let url = "/midi/twinkle.mid";
+	if (uelement) {
+		url = uelement.value;
+	}
 
-	displayMidiPianoRollFromUrl("/midi/twinkle.mid", "display-area", options);
+	displayMidiPianoRollFromUrl(url, "display-area", options);
 }
 
 
 
 //////////////////////////////
 //
-// displayMidiPianoRollFromUrl -- upload a MIDI file to the server and 
+// displayMidiPianoRollFromUrl -- upload a MIDI file to the server and
 //    get an SVG piano roll image in return.
 //
 
@@ -51,7 +55,7 @@ function displayMidiPianoRollFromUrl(midiurl, targetid, options) {
 //////////////////////////////
 //
 // getMidiDataFromUrlAndThenConvertToSvg --
-// 
+//
 // Reference: https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/Sending_and_Receiving_Binary_Data
 //
 
@@ -101,7 +105,6 @@ console.log("OPTIONS", options);
 		let contents = JSON.stringify(options, null, 3);
 		oelement.innerHTML =  `<h2>Options</h2><pre>${contents}</pre>`;
 	}
-
 
 	let formdata = new FormData();
 	formdata.set("outputformat", "pianoroll");
