@@ -2,6 +2,39 @@
 
 
 <script>
+// vim: ts=3:ft=javascript
+
+
+//////////////////////////////
+//
+// updateSvg --
+//
+
+function updateSvg() {
+	let elements;
+	let options = {};
+
+	elements = document.querySelectorAll(".option[type='text']");
+	for (let i=0; i<elements.length; i++) {
+		let id = elements[i].id;
+		let value = elements[i].value;
+		options[id] = value;
+	}
+
+	elements = document.querySelectorAll(".option[type='checkbox']");
+	for (let i=0; i<elements.length; i++) {
+		let id = elements[i].id;
+		let value = elements[i].checked;
+console.log("PROCESSING ", id, value);
+		if (value) {
+			options[id] = 1;
+		}
+	}
+
+
+	displayMidiPianoRollFromUrl("/midi/twinkle.mid", "display-area", options);
+}
+
 
 
 //////////////////////////////
@@ -11,7 +44,7 @@
 //
 
 function displayMidiPianoRollFromUrl(midiurl, targetid, options) {
-	getMidiDataFromUrlAndThenConvertToSvg(midiurl);
+	getMidiDataFromUrlAndThenConvertToSvg(midiurl, targetid, options);
 }
 
 
@@ -31,28 +64,63 @@ function getMidiDataFromUrlAndThenConvertToSvg(url, targetid, options) {
 	request.responseType = "blob";
 	request.onload = function (event) {
 		var blob = this.response;
-console.log("BLOB IS", blob);
 		displayMidiPianoRollFromBlob(blob, targetid, options);
 	};
 	request.send();
 }
 
 
+
 //////////////////////////////
 //
 // displayMidiPianoRollFromBlob -- Send the blob in a form to svg.humdrum.org
-//   and then display the restults in targetid element.
+//   and then display the results in targetid element.
 //
 
 function displayMidiPianoRollFromBlob(blob, targetid, options) {
+	let reader = new FileReader();
+	reader.readAsDataURL(blob);
+	reader.onloadend = function () {
+		let mime = reader.result.replace(/.*,/, "");;
+		displayMidiPianoRollFromMime64(mime, targetid, options);
+	};
+}
+
+
+
+//////////////////////////////
+//
+// displayMidiPianoRollFromMimd64 -- Send the MIME-64 data in a form to svg.humdrum.org
+//   and then display the results in targetid element.
+//
+
+function displayMidiPianoRollFromMime64(mime, targetid, options) {
+console.log("OPTIONS", options);
+	let oelement = document.querySelector("#options");
+	if (oelement) {
+		let contents = JSON.stringify(options, null, 3);
+		oelement.innerHTML =  `<h2>Options</h2><pre>${contents}</pre>`;
+	}
+
+
 	let formdata = new FormData();
 	formdata.set("outputformat", "pianoroll");
-	formdata.append("inputdata", blob);
+	formdata.append("inputdata", mime);
+	for (property in options) {
+		formdata.set(property, options[property]);
+	}
 
 	let request = new XMLHttpRequest();
 	request.open("POST", "https://data.svg.humdrum.org");
 	request.onload = function () {
-		console.log("FINISHED DOWNLOADING", this.textRepsonse);
+		let target = document.querySelector("#" + targetid);
+		if (!target) {
+			console.warn("Error: no target for ", targetid);
+			return;
+		}
+		// console.log("SETTING CONTENTS TO", this.responseText);
+		target.innerHTML = this.responseText;
+		console.log("TARGET", target);
 	};
 	request.send(formdata);
 }

@@ -7,8 +7,11 @@
 //
 
 document.addEventListener("DOMContentLoaded", function () {
-	console.log("IN LISTENER");
-	displayMidiPianoRollFromUrl("/midi/twinkle.mid", "display-area", {});
+	let options = {
+		scale: 5,
+		aspectRatio: 15
+	};
+	displayMidiPianoRollFromUrl("/midi/twinkle.mid", "display-area", options);
 });
 
 
